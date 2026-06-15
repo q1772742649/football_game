@@ -1,0 +1,570 @@
+<!doctype html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=1212, maximum-scale=1.0, user-scalable=no" />
+    <base target="_blank">
+    <meta name="applicable-device" content="pc">
+    <meta http-equiv="keywords" content="" />
+    <meta http-equiv="description" content="" />
+    <title>足球对阵详情</title>
+    <link rel="stylesheet" href="//static.sporttery.cn/res_1_0/common/bootstrap-4.4.1-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//static.sporttery.cn/res_1_0/common/reset_1_0.css">
+    <link rel="stylesheet" href="//static.sporttery.cn/res_1_0/jcw/css/menu_1_0.css">
+    <link rel="stylesheet" href="//static.sporttery.cn/res_1_0/jcw/css/footer.css">
+    <link rel="stylesheet" href="//static.sporttery.cn/res_1_0/jcw/css/fotbal_match.css">
+<script>
+  function domainPreV1(tid){try{var temDomain=document.domain.split(".");if(tid==1){if(temDomain&&temDomain[0]&&temDomain[0]!="www"){return temDomain[0]}else{return"www"}}else{if(temDomain&&temDomain[0]&&temDomain[0]!="www"){return 'mgray'}else{return"m"}}}catch(e){if(tid==1){return"www"}else{return"m"}}};
+   var jsCommonDataV1={
+            advUrl:"/htmlfrag",
+            webApi: "//webapi.sporttery.cn",
+            resDomain: "//static.sporttery.cn",
+            res: "//static.sporttery.cn/res_1_0/jcw/default",
+            env: "prd",
+            domain1:"www.lottery.gov.cn"
+            ,domain2:"www.sporttery.cn"
+            ,domain3:"m.lottery.gov.cn"
+            ,domain4:"m.sporttery.cn"
+            ,domain5:domainPreV1(1)+".lottery.gov.cn"
+            ,domain6:domainPreV1(1)+".sporttery.cn"
+            ,domain7:domainPreV1(2)+".lottery.gov.cn"
+            ,domain8:domainPreV1(2)+".sporttery.cn"
+        };
+</script>    <script src="//static.sporttery.cn/res_1_0/common/js/commonV1.js"></script>
+    <script src="//static.sporttery.cn/res_1_0/common/jquery-3.4.1.min.js"></script>
+    <script src="//static.sporttery.cn/res_1_0/common/bootstrap-4.4.1-dist/js/bootstrap.bundle.min.js"></script>
+    <script src="//static.sporttery.cn/res_1_0/common/bootstrap-4.4.1-dist/js/bootstrap.min.js"></script>
+    <script src="//static.sporttery.cn/res_1_0/common/js/axios.min.js"></script>
+    <script src="//static.sporttery.cn/res_1_0/jcwm/default/common/vant4/vue@3.js"></script>
+</head>
+<body>
+<!--topBar-->
+<div id="sy_735">
+</div>
+<!--menu-->
+<div class="g-menu bg-red" id="sy_736">
+</div>
+<!--内容-->
+<div class="g-position" id="sy_895"></div>
+<div class="g-cont" id="app">
+    <div v-if="showType !=4" style="text-align:center; padding:10px 0 10px 0; background: #f5f5f5;"><div style="width:1176px; margin:0 auto; color:#666666; line-height:22px; font-size:14px">特别提醒：本页面部分数据来源于第三方，仅供参考</div></div>
+    <div v-else style="text-align:center; padding:10px 0 10px 0; background: #f5f5f5;"><div style="width:1176px; margin:0 auto; color:#666666; line-height:22px; font-size:14px">特别提醒：本页面部分数据来源于第三方，仅供参考，不作为正式开奖结果。</div></div>
+    <div class="container" v-cloak id="top">
+        <div class="row">
+            <div class="col-12">
+                <div class="m-crumbs"> <a class="color-999" href="/">竞彩网</a><span> &gt; </span>
+                    <a class="color-999" href="/jczx/index.html">竞彩足球</a>
+                    <template v-if="Object.keys(pageTitle).length > 0">
+                    <span> &gt; </span>
+                   {{pageTitle.homeTeamShortName}} vs {{pageTitle.awayTeamShortName}}
+                    </template>
+                </div>
+            </div>
+        </div>
+        <!-- 对阵卡片 -->
+        <div class="row">
+<!--            <template v-if='pageType ==1' >-->
+            <div class="col-12" v-if="Object.keys(pageTitle).length==0">
+                <div class="m-matchCard">
+                    <!-- 左边 -->
+                    <div class="m-matchCard-Lf">
+                        <div class="u-detail">
+                        </div>
+                        <div class="u-logo" v-if='pageType ==1'><img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_zd.png" /></div>
+                    </div>
+                    <!-- 中间 -->
+                    <div class="m-matchCard-Cen">
+                        <div class="u-top"></div>
+                        <div class="u-middle">
+                            <div class="u-middleLf"></div>
+                            <div class="u-middleMid">
+                                <div class="vs" v-if='pageType ==1'>VS</div>
+                            </div>
+                            <div class="u-middleRt"></div>
+                        </div>
+                        <div class="u-btm"></div>
+                    </div>
+                    <!-- 右边 -->
+                    <div class="m-matchCard-Rt">
+                        <div class="u-logo" v-if='pageType ==1'><img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_kd.png" /></div>
+                        <div class="u-detail">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12" v-else>
+                <div class="m-matchCard">
+                    <!-- 左边 -->
+                    <div class="m-matchCard-Lf">
+                        <div class="u-detail">
+                            <template v-if="pageTitle.wbsjStats && pageTitle.wbsjStats.home">
+                            <p>排名: {{pageTitle.wbsjStats.home.groupName?pageTitle.wbsjStats.home.groupName:pageTitle.wbsjStats.home.phaseName}}
+                                第<span>{{pageTitle.wbsjStats.home.ranking!=''?pageTitle.wbsjStats.home.ranking :'-'}}</span>名
+                            </p>
+                            <p>赛季总成绩: <span>{{pageTitle.wbsjStats.home.sWinGoalMatchCnt!==''?pageTitle.wbsjStats.home.sWinGoalMatchCnt:'-'}}</span>胜 <span>{{pageTitle.wbsjStats.home.sDrawMatchCnt!==''?pageTitle.wbsjStats.home.sDrawMatchCnt:'-'}}</span>平 <span>{{pageTitle.wbsjStats.home.sLossGoalMatchCnt!==''?pageTitle.wbsjStats.home.sLossGoalMatchCnt:'-'}}</span>负</p>
+                            <p>赛季主场成绩: <span>{{pageTitle.wbsjStats.home.sHomeWinGoalMatchCnt!==''?pageTitle.wbsjStats.home.sHomeWinGoalMatchCnt:'-'}}</span>胜 <span>{{pageTitle.wbsjStats.home.sHomeDrawMatchCnt!==''?pageTitle.wbsjStats.home.sHomeDrawMatchCnt:'-'}}</span>平 <span>{{pageTitle.wbsjStats.home.sHomeLossGoalMatchCnt!==''?pageTitle.wbsjStats.home.sHomeLossGoalMatchCnt:'-'}}</span>负</p>
+                            </template>
+                        </div>
+                        <div class="u-logo" >
+                            <img v-if="!pageTitle.homeTeamLogoPath" alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_zd.png" />
+                            <img v-else alt="" :src="pageTitle.homeTeamLogoPath" onerror="javascript:this.src='https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_zd.png'"/>
+                        </div>
+                    </div>
+                    <!-- 中间 -->
+                    <div class="m-matchCard-Cen">
+                        <div class="u-top">{{pageTitle.matchNum}}
+                            <a :href="linkToLeague(pageTitle)" v-if="pageTitle.tournamentCnShortName !=''" class="u-hover">{{pageTitle.tournamentCnShortName}}></a>
+                            <span v-else>{{pageTitle.tournamentCnShortName}}</span>
+                        </div>
+                        <div class="u-middle">
+                            <div class="u-middleLf"><a :href="linkToTeam(pageTitle.uniformHomeTeamId)" target="_blank">{{pageTitle.homeTeamShortName}}</a></div>
+                            <div class="u-middleMid" v-if="pageTitle.fullCourtGoal && pageTitle.fullCourtGoal!='' && pageTitle.fullCourtGoal!='-1:-1'">
+                                <div class="num">{{pageTitle.fullCourtGoal.split(":")[0]}}</div>
+                                <div class="colon">:</div>
+                                <div class="num">{{pageTitle.fullCourtGoal.split(":")[1]}}</div>
+                            </div>
+                            <div class="u-middleMid" v-else>
+                                <div class="vs">VS</div>
+                            </div>
+                            <div class="u-middleRt"><a :href="linkToTeam(pageTitle.uniformAwayTeamId)" target="_blank">{{pageTitle.awayTeamShortName}}</a></div>
+                        </div>
+                        <div class="u-btm">
+                            {{pageTitle.seasonName}}
+                            {{pageTitle.phaseName}}
+                            {{pageTitle.groupName?' '+pageTitle.groupName:''}}
+                            {{pageTitle.gameweek?' 第'+pageTitle.gameweek+'轮':''}}
+                            {{pageTitle.matchDateTime.substring(0,16)}}
+                        </div>
+                    </div>
+                    <!-- 右边 -->
+                    <div class="m-matchCard-Rt">
+                        <div class="u-logo">
+                            <img v-if="pageTitle.awayTeamLogoPath==''" alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_kd.png" />
+                            <img v-else alt="" :src="pageTitle.awayTeamLogoPath" onerror="javascript:this.src='https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_kd.png'"/>
+                        </div>
+                        <div class="u-detail">
+                            <template v-if="pageTitle.wbsjStats && pageTitle.wbsjStats.away">
+                                <p>排名: {{pageTitle.wbsjStats.away.groupName?pageTitle.wbsjStats.away.groupName:pageTitle.wbsjStats.away.phaseName}}
+                                    第<span>{{pageTitle.wbsjStats.away.ranking!=''?pageTitle.wbsjStats.away.ranking :'-'}}</span>名
+                                </p>
+                                <p>赛季总成绩: <span>{{pageTitle.wbsjStats.away.sWinGoalMatchCnt!==''?pageTitle.wbsjStats.away.sWinGoalMatchCnt:'-'}}</span>胜 <span>{{pageTitle.wbsjStats.away.sDrawMatchCnt!==''?pageTitle.wbsjStats.away.sDrawMatchCnt:'-'}}</span>平 <span>{{pageTitle.wbsjStats.away.sLossGoalMatchCnt!==''?pageTitle.wbsjStats.away.sLossGoalMatchCnt:'-'}}</span>负</p>
+                                <p>赛季客场成绩: <span>{{pageTitle.wbsjStats.away.sAwayWinGoalMatchCnt!==''?pageTitle.wbsjStats.away.sAwayWinGoalMatchCnt:'-'}}</span>胜 <span>{{pageTitle.wbsjStats.away.sAwayDrawMatchCnt!==''?pageTitle.wbsjStats.away.sAwayDrawMatchCnt:'-'}}</span>平 <span>{{pageTitle.wbsjStats.away.sAwayLossGoalMatchCnt!==''?pageTitle.wbsjStats.away.sAwayLossGoalMatchCnt:'-'}}</span>负</p>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+<!--            </template>-->
+        </div>
+        <!--  tab标签 -->
+        <div class="row">
+            <div class="col-12">
+                <ul class="m-tabs">
+                    <li :class="showType==1? 'on' :'' " @click="tabClick(1)"><a>赛事资讯</a></li>
+                    <li :class="showType==2? 'on' :'' " @click="tabClick(2)"><a>赛事前瞻</a></li>
+                    <li v-if="mid !=''" :class="showType==3? 'on' :'' " @click="tabClick(3)"><a>固定奖金</a></li>
+                    <li v-if="mid !=''" :class="showType==4? 'on' :'' " @click="tabClick(4)"><a>比分直播</a></li>
+                </ul>
+            </div>
+        </div>
+        <!-- 内容 -->
+        <div class="row m-mainCon">
+            <div class="el-loading-mask" v-show="loadShow">
+                <div class="el-loading-spinner">
+                    <svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path"></circle></svg>
+                </div>
+            </div>
+            <!-- 比赛信息 -->
+            <div class="col-12" v-if="showType ==1 && loadShow ==false ">
+                <div class="m-box">
+                    <!-- 比赛解析 -->
+<!--                   <template v-if="relatedNews.length>0 || contList.length>0">-->
+                    <div>
+                        <div class="m-title"><em></em>比赛解析</div>
+                        <ul class="m-list" v-if="contList.length>0">
+                            <li v-for="obj in contList">
+                                <a :href="obj.contPath">
+                                <div class="m-listTitle">{{obj.title}}</div>
+                                <div class="m-listCon">{{obj.description}}</div>
+                                <div class="m-listTime">{{getYMDStr(obj.releaseDate)}}</div>
+                                </a>
+                            </li>
+                        </ul>
+                        <!-- 暂无数据 -->
+                        <div class="m-listNone" v-else>暂无数据</div>
+                    </div>
+                    <!-- 最新新闻 -->
+                    <div>
+                        <div class="m-title"><em></em>相关新闻</div>
+                        <ul class="m-list1" v-if="relatedNews.length>0">
+                            <li v-for="obj in relatedNews">
+                                <a :href="obj.contPath">
+                                <div class="left">{{obj.title}}</div>
+                                <div class="right">{{getMDStr(obj.releaseDate)}}</div>
+                                </a>
+                            </li>
+                        </ul>
+                        <div class="m-listNone" v-else>暂无数据</div>
+                    </div>
+<!--                   </template>-->
+                    <!-- 无数据 -->
+<!--                    <div class="m-matchInfo-none" v-else>暂无数据方案</div>-->
+                </div>
+            </div>
+            <!-- 比赛数据 -->
+            <div class="col-12" v-if="showType ==2">
+                <template v-if="mid==''&& gm ==''">
+                    <div class="m-box"><div class="jc-on-selling">暂无数据</div></div>
+                </template>
+                <template v-else>
+                    <zqbs-component :mid="mid" :gm="gm" @changeloadlshow="changeLoadShow" :showjfb="isShowJfb" :showshooter="isShowShooter" :showinjury="isShowInjury"></zqbs-component>
+                </template>
+            </div>
+            <!-- 固定奖金 -->
+            <div class="col-12"  v-if="showType ==3 && loadShow ==false">
+                <div class="m-box" v-if="mid !='' && FBonus.sectionsNo999 != '-2' && FBonus.isCancel != 1">
+                    <!-- 开奖结果 -->
+                    <div>
+                        <div class="m-title"><em></em>开奖结果</div>
+                        <table class="m-table m-table-0" v-if="FBonus.sectionsNo999!='' && FBonus.sectionsNo999!='-1:-1' && FBonus.sectionsNo999!='无效场次' && FBonus.matchResultList && FBonus.matchResultList.length > 0">
+                            <tr>
+                                <th width="306">游戏</th>
+                                <th width="420">开奖结果</th>
+                                <th width="420">奖金</th>
+                            </tr>
+                            <tr >
+                                <th>胜平负</th>
+                                <td class="u-txtRight"><span class="u-bgRed">{{FBonus.matchResultByKey.had.combinationDesc?FBonus.matchResultByKey.had.combinationDesc:'--'}}</span></td>
+                                <td>{{FBonus.matchResultByKey.had.odds?FBonus.matchResultByKey.had.odds:'--'}}</td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    让球胜平负
+                                    <p v-if="FBonus.matchResultByKey.hhad.combinationDesc==''">({{FBonus.matchResultByKey.hhad.goalLine}})</p>
+                                </th>
+                                <td class="u-txtRight"><span class="u-bgRed">{{FBonus.matchResultByKey.hhad.combinationDesc?FBonus.matchResultByKey.hhad.combinationDesc:'--'}}</span></td>
+                                <td>{{FBonus.matchResultByKey.hhad.odds?FBonus.matchResultByKey.hhad.odds:'--'}}</td>
+                            </tr>
+                            <tr>
+                                <th>比分</th>
+                                <td class="u-txtRight"><span class="u-bgRed">{{FBonus.matchResultByKey.crs.combinationDesc?FBonus.matchResultByKey.crs.combinationDesc:'--'}}</span></td>
+                                <td>{{FBonus.matchResultByKey.crs.odds?FBonus.matchResultByKey.crs.odds:'--'}}</td>
+                            </tr>
+                            <tr>
+                                <th>总进球</th>
+                                <td class="u-txtRight"><span class="u-bgRed">{{FBonus.matchResultByKey.ttg.combinationDesc?FBonus.matchResultByKey.ttg.combinationDesc:'--'}}</span></td>
+                                <td>{{FBonus.matchResultByKey.ttg.odds?FBonus.matchResultByKey.ttg.odds:'--'}}</td>
+                            </tr>
+                            <tr>
+                                <th>半全场胜平负</th>
+                                <td class="u-txtRight"><span class="u-bgRed">{{FBonus.matchResultByKey.hafu.combinationDesc?FBonus.matchResultByKey.hafu.combinationDesc:'--'}}</span></td>
+                                <td>{{FBonus.matchResultByKey.hafu.odds?FBonus.matchResultByKey.hafu.odds:'--'}}</td>
+                            </tr>
+                        </table>
+                        <table class="m-table m-table-0" v-else>
+                            <tr><th width="306">游戏</th><th width="420">开奖结果</th><th width="420">奖金</th>
+                            </tr>
+                            <tr><th>胜平负</th>
+                                <td colspan="2" rowspan="5" class="m-tableNone-td"  style="color: #666;border-bottom: 0">
+                                    <template v-if="FBonus.sectionsNo999=='-1:-1' || FBonus.sectionsNo999 =='无效场次'">
+                                        无效场次，请关注<a href="/ssgg/" style="color: #499BF4;text-decoration: none;">赛事公告</a>
+                                    </template>
+                                    <template v-else >
+                                        暂无数据
+                                    </template>
+                                </td>
+                            </tr>
+                            <tr><th>让球胜平负</th></tr>
+                            <tr><th>比分</th></tr>
+                            <tr><th>总进球</th></tr>
+                            <tr><th>半全场胜平负</th></tr>
+                        </table>
+                    </div>
+                    <!-- 胜平负固定奖金 -->
+                    <div>
+                        <div class="m-title"><em></em>胜平负固定奖金</div>
+                        <table class="m-table m-table-1" v-if="this.FBonus.oddsHistory.hadList && this.FBonus.oddsHistory.hadList.length > 0">
+                            <tr>
+                                <th :rowspan="FBonus.oddsHistory.hadList.length+1" width="110" class="u-bgFa">
+                                    <p>彩果:</p>
+                                    <p>
+                                        <span class="u-bgRed" v-if="FBonus.matchResultByKey.had && FBonus.matchResultByKey.had.combinationDesc">{{FBonus.matchResultByKey.had.combinationDesc}}</span>
+                                        <span class="u-bgRed" v-else>--</span>
+                                    </p>
+                                </th>
+                                <th :rowspan="FBonus.oddsHistory.hadList.length+1" width="8" class="u-bgWhite"></th>
+                                <th width="219">发布时间</th>
+                                <th width="270">胜</th>
+                                <th width="270">平</th>
+                                <th width="270">负</th>
+                            </tr>
+                            <tr v-for="obj in FBonus.oddsHistory.hadList">
+                                <td>{{obj.updateDate}} {{obj.updateTime}}</td>
+                                <td class="u-txtRightSpf">
+                                    <span class="u-batNum">{{obj.h}}</span>
+                                    <span class="u-img">
+                                    <img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_sjt.png" v-if="obj.hf==1"/>
+                                    <img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_xjt.png" v-if="obj.hf==-1"/>
+                                    </span>
+                                </td>
+                                <td class="u-txtRightSpf"><span class="u-batNum">{{obj.d}}</span>
+                                    <span class="u-img">
+                                    <img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_sjt.png" v-if="obj.df==1"/>
+                                    <img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_xjt.png" v-if="obj.df==-1"/>
+                                    </span>
+                                </td>
+                                <td class="u-txtRightSpf"><span class="u-batNum">{{obj.a}}</span>
+                                    <span class="u-img">
+                                    <img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_sjt.png" v-if="obj.af==1"/>
+                                    <img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_xjt.png" v-if="obj.af==-1"/>
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+                        <!-- 无数据 -->
+                        <div class="m-listNone" v-else >暂无数据</div>
+                    </div>
+                    <!-- 让球胜平负固定奖金 -->
+                    <div>
+                        <div class="m-title"><em></em>让球胜平负固定奖金</div>
+
+                        <table class="m-table m-table-1" v-if="FBonus.oddsHistory.hhadList && this.FBonus.oddsHistory.hhadList.length > 0">
+                            <tr>
+                                <th :rowspan="FBonus.oddsHistory.hhadList.length+1" width="110" class="u-bgFa">
+                                    <p class="u-rq">让球</p>
+                                    <p class="u-num">{{this.FBonus.oddsHistory.hhadList[0].goalLine}}</p>
+                                    <p>彩果:</p>
+                                    <p>  <span class="u-bgRed" v-if="FBonus.matchResultByKey.hhad">{{FBonus.hhadRn[FBonus.matchResultByKey.hhad.combination.toLowerCase()]}}</span>
+                                        <span class="u-bgRed" v-else>--</span>
+                                    </p>
+                                </th>
+                                <th :rowspan="FBonus.oddsHistory.hhadList.length+1" width="8" class="u-bgWhite"></th>
+                                <th width="219">发布时间</th>
+                                <th width="270">胜</th>
+                                <th width="270">平</th>
+                                <th width="270">负</th>
+                            </tr>
+                            <!-- u-oneLine只有一行数据的时候加 -->
+                            <tr v-for="obj in FBonus.oddsHistory.hhadList" :class="this.FBonus.oddsHistory.hhadList.length >1? '': 'u-oneLine'">
+                                <td>{{obj.updateDate}} {{obj.updateTime}}</td>
+                                <td class="u-txtRightSpf">
+                                    <span class="u-batNum">{{obj.h}}</span>
+                                    <span class="u-img">
+                                    <img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_sjt.png" v-if="obj.hf==1"/>
+                                    <img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_xjt.png" v-if="obj.hf==-1"/>
+                                    </span>
+                                </td>
+                                <td class="u-txtRightSpf"><span class="u-batNum">{{obj.d}}</span>
+                                    <span class="u-img">
+                                    <img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_sjt.png" v-if="obj.df==1"/>
+                                    <img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_xjt.png" v-if="obj.df==-1"/>
+                                    </span>
+                                </td>
+                                <td class="u-txtRightSpf"><span class="u-batNum">{{obj.a}}</span>
+                                    <span class="u-img">
+                                    <img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_sjt.png" v-if="obj.af==1"/>
+                                    <img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_xjt.png" v-if="obj.af==-1"/>
+                                     </span>
+                                </td>
+                            </tr>
+                        </table>
+                        <!-- 无数据 -->
+                        <div class="m-listNone" v-else>暂无数据</div>
+                    </div>
+                    <!-- 比分固定奖金 -->
+                    <div>
+                        <div class="m-title"><em></em>比分固定奖金</div>
+
+                        <table class="m-table m-table-2" v-if="FBonus.oddsHistory.crsList && FBonus.oddsHistory.crsList.length > 0">
+                            <template  v-for="(obj,index) in FBonus.oddsHistory.crsList">
+                                <tr>
+                                    <template v-if="index===0">
+                                        <th :rowspan="FBonus.oddsHistory.crsList.length*6" width="110" class="u-bgFa">
+                                            <p>彩果:</p>
+                                            <p>
+                                                <span class="u-bgRed" v-if="FBonus.matchResultByKey.crs && FBonus.matchResultByKey.crs.combinationDesc">{{FBonus.matchResultByKey.crs.combinationDesc}}</span>
+                                                <span class="u-bgRed" v-else>--</span>
+                                            </p>
+                                        </th>
+                                        <th :rowspan="FBonus.oddsHistory.crsList.length*6" width="8" class="u-bgWhite"></th>
+                                    </template>
+                                    <th width="92">发布时间</th>
+                                    <th width="72">1 : 0</th>
+                                    <th width="72">2 : 0</th>
+                                    <th width="72">2 : 1</th>
+                                    <th width="72">3 : 0</th>
+                                    <th width="72">3 : 1</th>
+                                    <th width="72">3 : 2</th>
+                                    <th width="72">4 : 0</th>
+                                    <th width="72">4 : 1</th>
+                                    <th width="72">4 : 2</th>
+                                    <th width="72">5 : 0</th>
+                                    <th width="72">5 : 1</th>
+                                    <th width="72">5 : 2</th>
+                                    <th width="72">胜其它</th>
+                                </tr>
+                                <tr>
+                                    <th rowspan="5" class="u-bgWhite1">
+                                        {{obj.updateDate}}<br/>{{obj.updateTime}}
+                                    </th>
+                                    <td v-for="subObj in FBonus.listSh">
+                                    <span class="u-batNum" >
+                                    {{obj[subObj]}}<img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_sjt.png" v-if="obj[(subObj+'f')]==1"/>
+                                    <img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_xjt.png" v-if="obj[(subObj+'f')]==-1"/>
+                                </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>0 : 0</th>
+                                    <th>1 : 1</th>
+                                    <th>2 : 2</th>
+                                    <th>3 : 3</th>
+                                    <th>平其它</th>
+                                    <th colspan="8" rowspan="2" class="u-borLeft" style="background: #ececec"></th>
+                                </tr>
+                                <tr>
+                                    <td v-for="subObj in FBonus.listSd">
+                                    <span class="u-batNum" >
+                                    {{obj[subObj]}}<img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_sjt.png" v-if="obj[(subObj+'f')]==1"/>
+                                    <img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_xjt.png" v-if="obj[(subObj+'f')]==-1"/>
+                                </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>0 : 1</th>
+                                    <th>0 : 2</th>
+                                    <th>1 : 2</th>
+                                    <th>0 : 3</th>
+                                    <th>1 : 3</th>
+                                    <th>2 : 3</th>
+                                    <th>0 : 4</th>
+                                    <th>1 : 4</th>
+                                    <th>2 : 4</th>
+                                    <th>0 : 5</th>
+                                    <th>1 : 5</th>
+                                    <th>2 : 5</th>
+                                    <th>负其它</th>
+                                </tr>
+                                <tr>
+                                    <td v-for="subObj in FBonus.listSa">
+                                    <span class="u-batNum" >
+                                    {{obj[subObj]}}<img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_sjt.png" v-if="obj[(subObj+'f')]==1"/>
+                                    <img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_xjt.png" v-if="obj[(subObj+'f')]==-1"/>
+                                </span>
+                                    </td>
+                                </tr>
+                            </template>
+                        </table>
+                        <!-- 无数据 -->
+                        <div class="m-listNone" v-else>暂无数据</div>
+                    </div>
+                    <!-- 总进球固定奖金 -->
+                    <div>
+                        <div class="m-title"><em></em>总进球固定奖金</div>
+                        <table class="m-table m-table-1" v-if="this.FBonus.oddsHistory.ttgList && this.FBonus.oddsHistory.ttgList.length > 0">
+                            <tr>
+                                <th :rowspan="FBonus.oddsHistory.ttgList.length+1" width="110" class="u-bgFa">
+                                    <p>彩果:</p>
+                                    <p>
+                                        <span class="u-bgRed" v-if="FBonus.matchResultByKey.ttg && FBonus.matchResultByKey.ttg.combinationDesc">{{FBonus.matchResultByKey.ttg.combinationDesc}}</span>
+                                        <span class="u-bgRed" v-else>--</span>
+                                    </p>
+                                </th>
+                                <th :rowspan="FBonus.oddsHistory.ttgList.length+1" width="8" class="u-bgWhite"></th>
+                                <th width="219">发布时间</th>
+                                <th width="101">0</th>
+                                <th width="101">1</th>
+                                <th width="101">2</th>
+                                <th width="101">3</th>
+                                <th width="101">4</th>
+                                <th width="101">5</th>
+                                <th width="101">6</th>
+                                <th width="101">7+</th>
+                            </tr>
+                            <tr v-for="obj in FBonus.oddsHistory.ttgList">
+                                <td>{{obj.updateDate}} {{obj.updateTime}}</td>
+                                <td v-for="subObj in FBonus.listTtg">
+                                    <span class="u-batNum" >
+                                    {{obj[subObj]}}<img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_sjt.png" v-if="obj[(subObj+'f')]==1"/>
+                                    <img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_xjt.png" v-if="obj[(subObj+'f')]==-1"/>
+                                </span>
+                                </td>
+                            </tr>
+                        </table>
+                        <!-- 无数据 -->
+                        <div class="m-listNone" v-else>暂无数据</div>
+                    </div>
+                    <!-- 半全场胜平负固定奖金 -->
+                    <div>
+                        <div class="m-title"><em></em>半全场胜平负固定奖金</div>
+                        <table class="m-table m-table-1" v-if="FBonus.oddsHistory.hafuList && FBonus.oddsHistory.hafuList.length > 0">
+                            <tr>
+                                <th :rowspan="FBonus.oddsHistory.hafuList.length+1" width="110" class="u-bgFa">
+                                    <p>彩果:</p>
+                                    <p>
+                                        <span class="u-bgRed" v-if="FBonus.matchResultByKey.hafu && FBonus.matchResultByKey.hafu.combinationDesc">{{FBonus.matchResultByKey.hafu.combinationDesc}}</span>
+                                        <span class="u-bgRed" v-else>--</span>
+                                    </p>
+                                </th>
+                                <th :rowspan="FBonus.oddsHistory.hafuList.length+1" width="8" class="u-bgWhite"></th>
+                                <th width="219">发布时间</th>
+                                <th width="90">胜胜</th>
+                                <th width="90">胜平</th>
+                                <th width="90">胜负</th>
+                                <th width="90">平胜</th>
+                                <th width="90">平平</th>
+                                <th width="90">平负</th>
+                                <th width="90">负胜</th>
+                                <th width="90">负平</th>
+                                <th width="90">负负</th>
+                            </tr>
+                            <tr  v-for="obj in FBonus.oddsHistory.hafuList">
+                                <td>{{obj.updateDate}} {{obj.updateTime}}</td>
+                                <td v-for="subObj in FBonus.listHafu">
+                                    <span class="u-batNum" >
+                                    {{obj[subObj]}}<img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_sjt.png" v-if="obj[(subObj+'f')]==1"/>
+                                    <img alt="" src="https://static.sporttery.cn/res_1_0/jcw/images/fotBasbal_match/icon_xjt.png" v-if="obj[(subObj+'f')]==-1"/>
+                                </span>
+                                </td>
+                            </tr>
+                        </table>
+                        <!-- 无数据 -->
+                        <div class="m-listNone" v-else>暂无数据</div>
+                    </div>
+
+                </div>
+                <div class="m-box" v-else>
+                    <div class="jc-on-selling" v-if="mid ==''">竞彩游戏未开售该场比赛</div>
+                    <div class="jc-on-selling" v-else-if="FBonus.isCancel == '1'">
+                        <div>销售取消，请关注<a href="/ssgg/" style="color: #499BF4;text-decoration: none;">赛事公告</a></div>
+                    </div>
+                    <div class="jc-on-selling" v-else>暂无数据</div>
+                </div>
+                <div class="m-tips" v-if="mid !=''">注：固定奖金以完成有效投注所获得的某场比赛对应的固定奖金为准。</div>
+
+            </div>
+            <!-- 比赛直播 -->
+            <div class="col-12" v-if="showType ==4">
+                <template v-if="mid!=''">
+                    <zqzb-component :mid="mid" @changeloadlshow="changeLoadShow" ></zqzb-component>
+                </template>
+                <div class="m-box" v-else>
+                    <div class="jc-on-selling">竞彩游戏未开售该场比赛</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+ <!--footer-->
+ <div id="sy_608">
+</div>
+<script>
+    var idList = 'sy_735,sy_736,sy_608,sy_895';
+    var adList = '735,736,608,895';
+    var funList = '';
+    commonV1Fun.loadHtml(idList, adList, funList);
+</script>
+<script src="//static.sporttery.cn/res_1_0/jcw/default/jc/zqdz.js"  type="module"></script>
+</body>
+</html>
