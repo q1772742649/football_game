@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 
+#include "betadvisor.h"
 #include "matchscraper.h"
 
 QT_BEGIN_NAMESPACE
@@ -23,6 +24,10 @@ private slots:
     void onDateChanged(int index);
     void onPickMatchChanged(int index);
     void onPickSideChanged(int index);
+    void onAiAnalyzeClicked();
+    void onAnalyzeFinished(const QString &text);
+    void onAnalyzeFailed(const QString &errorMessage);
+    void onAnalyzeProgress(const QString &message);
     void onFetchFinished(bool success, const QString &message);
     void onFetchFailed(const QString &errorMessage);
     void onFetchProgress(const QString &message);
@@ -30,8 +35,11 @@ private slots:
 private:
     void applyDayToUi(int dayIndex);
     void applyPickSideToRow(int row);
+    void applyPickSideToAllRows();
+    bool collectSelections(QVector<BetMatchSelection> &selections, QString &errorMessage);
 
     Ui::GameView *ui;
     MatchScraper *m_scraper;
+    BetAdvisor *m_advisor;
 };
 #endif // MAINWINDOW_H

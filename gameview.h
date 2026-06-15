@@ -69,6 +69,7 @@ public:
     QLabel *labelMyAmount;
     QLineEdit *editMyAmount;
     QPushButton *btnCalculate;
+    QPushButton *btnAiAnalyze;
     QGroupBox *groupBoxLog;
     QTextEdit *textEditLog;
     QMenuBar *menubar;

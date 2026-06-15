@@ -33,6 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::GameView)
     , m_scraper(new MatchScraper(this))
+    , m_advisor(new BetAdvisor(this))
 {
     ui->setupUi(this);
 
@@ -42,7 +43,16 @@ MainWindow::MainWindow(QWidget *parent)
     for (int row = 0; row < BetCalculator::kMatchCount; ++row)
         updateRowSideCombo(rowSides[row], leftLabels[row]->text(), rightLabels[row]->text());
 
+    QCheckBox *checks[] = { ui->checkMatch1, ui->checkMatch2, ui->checkMatch3, ui->checkMatch4 };
+    for (int row = 0; row < BetCalculator::kMatchCount; ++row) {
+        connect(checks[row], &QCheckBox::toggled, this, [this, row](bool checked) {
+            if (checked)
+                applyPickSideToRow(row);
+        });
+    }
+
     connect(ui->btnCalculate, &QPushButton::clicked, this, &MainWindow::onCalculateClicked);
+    connect(ui->btnAiAnalyze, &QPushButton::clicked, this, &MainWindow::onAiAnalyzeClicked);
     connect(ui->btnUpdate, &QPushButton::clicked, this, &MainWindow::onUpdateClicked);
     connect(ui->comboPickDate, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, &MainWindow::onDateChanged);
@@ -53,6 +63,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_scraper, &MatchScraper::fetchFinished, this, &MainWindow::onFetchFinished);
     connect(m_scraper, &MatchScraper::fetchFailed, this, &MainWindow::onFetchFailed);
     connect(m_scraper, &MatchScraper::fetchProgress, this, &MainWindow::onFetchProgress);
+    connect(m_advisor, &BetAdvisor::analyzeFinished, this, &MainWindow::onAnalyzeFinished);
+    connect(m_advisor, &BetAdvisor::analyzeFailed, this, &MainWindow::onAnalyzeFailed);
+    connect(m_advisor, &BetAdvisor::analyzeProgress, this, &MainWindow::onAnalyzeProgress);
 }
 
 MainWindow::~MainWindow()
@@ -127,12 +140,13 @@ void MainWindow::onPickMatchChanged(int index)
 void MainWindow::onPickSideChanged(int index)
 {
     Q_UNUSED(index)
+    applyPickSideToAllRows();
+}
 
-    const int matchRow = ui->comboPickMatch->currentIndex();
-    if (matchRow < 0 || matchRow >= BetCalculator::kMatchCount)
-        return;
-
-    applyPickSideToRow(matchRow);
+void MainWindow::applyPickSideToAllRows()
+{
+    for (int row = 0; row < BetCalculator::kMatchCount; ++row)
+        applyPickSideToRow(row);
 }
 
 void MainWindow::applyPickSideToRow(int row)
@@ -147,11 +161,6 @@ void MainWindow::applyPickSideToRow(int row)
     QComboBox *rowSides[] = { ui->comboRowSide1, ui->comboRowSide2, ui->comboRowSide3, ui->comboRowSide4 };
 
     const int pickMode = ui->comboPickSide->currentIndex();
-    if (pickMode == BetCalculator::PickLeft || pickMode == BetCalculator::PickRight) {
-        rowSides[row]->setCurrentIndex(pickMode);
-        return;
-    }
-
     const int leftIndex = row;
     const int rightIndex = row + BetCalculator::kMatchCount;
     const double leftOdds = BetCalculator::parsePositiveDouble(oddsEdits[leftIndex]->text(),
@@ -227,11 +236,34 @@ void MainWindow::applyDayToUi(int dayIndex)
     ui->comboPickMatch->blockSignals(false);
     if (ui->comboPickMatch->count() > 0) {
         ui->comboPickMatch->setCurrentIndex(0);
-        applyPickSideToRow(0);
+        applyPickSideToAllRows();
     }
 }
 
 void MainWindow::onCalculateClicked()
+{
+    QVector<BetMatchSelection> selections;
+    QString errorMessage;
+    if (!collectSelections(selections, errorMessage)) {
+        ui->textEditLog->setPlainText(errorMessage);
+        return;
+    }
+
+    applyPickSideToAllRows();
+
+    const double budget = BetCalculator::parsePositiveDouble(ui->editMyAmount->text(),
+                                                             BetCalculator::kDefaultAmount);
+    const BetCalculationResult result = BetCalculator::calculate(budget, selections);
+    if (!result.success) {
+        ui->textEditLog->setPlainText(result.errorMessage);
+        return;
+    }
+
+    ui->textEditLog->setPlainText(result.logText);
+    ui->statusbar->showMessage(result.statusSummary);
+}
+
+bool MainWindow::collectSelections(QVector<BetMatchSelection> &selections, QString &errorMessage)
 {
     const QLineEdit *oddsEdits[] = {
         ui->editOdds1, ui->editOdds2, ui->editOdds3, ui->editOdds4,
@@ -242,11 +274,9 @@ void MainWindow::onCalculateClicked()
         ui->labelCountry5, ui->labelCountry6, ui->labelCountry7, ui->labelCountry8
     };
     QCheckBox *checks[] = { ui->checkMatch1, ui->checkMatch2, ui->checkMatch3, ui->checkMatch4 };
-    QComboBox *rowSides[] = { ui->comboRowSide1, ui->comboRowSide2, ui->comboRowSide3, ui->comboRowSide4 };
 
-    const double budget = BetCalculator::parsePositiveDouble(ui->editMyAmount->text(),
-                                                             BetCalculator::kDefaultAmount);
-    QVector<BetMatchSelection> selections;
+    const int pickMode = ui->comboPickSide->currentIndex();
+    selections.clear();
 
     for (int row = 0; row < BetCalculator::kMatchCount; ++row) {
         if (!checks[row]->isChecked())
@@ -258,15 +288,14 @@ void MainWindow::onCalculateClicked()
         const QString rightName = countryLabels[rightIndex]->text();
 
         if (leftName == QStringLiteral("-") || rightName == QStringLiteral("-")) {
-            ui->textEditLog->setPlainText(QStringLiteral("第 %1 行无比赛数据，请取消勾选。").arg(row + 1));
-            return;
+            errorMessage = QStringLiteral("第 %1 行无比赛数据，请取消勾选。").arg(row + 1);
+            return false;
         }
 
         if (oddsEdits[leftIndex]->text().trimmed().isEmpty()
             || oddsEdits[rightIndex]->text().trimmed().isEmpty()) {
-            ui->textEditLog->setPlainText(
-                QStringLiteral("%1 vs %2 暂无赔率，请取消勾选或换一场。").arg(leftName, rightName));
-            return;
+            errorMessage = QStringLiteral("%1 vs %2 暂无赔率，请取消勾选或换一场。").arg(leftName, rightName);
+            return false;
         }
 
         BetMatchSelection item;
@@ -277,16 +306,65 @@ void MainWindow::onCalculateClicked()
                                                            BetCalculator::defaultOdds(leftIndex));
         item.rightOdds = BetCalculator::parsePositiveDouble(oddsEdits[rightIndex]->text(),
                                                             BetCalculator::defaultOdds(rightIndex));
-        item.pickLeft = rowSides[row]->currentIndex() == 0;
+        item.pickLeft = BetCalculator::resolvePickLeft(item.leftOdds, item.rightOdds, pickMode);
         selections.append(item);
     }
 
-    const BetCalculationResult result = BetCalculator::calculate(budget, selections);
-    if (!result.success) {
-        ui->textEditLog->setPlainText(result.errorMessage);
+    if (selections.isEmpty()) {
+        errorMessage = QStringLiteral("请至少勾选一场比赛。");
+        return false;
+    }
+
+    return true;
+}
+
+void MainWindow::onAiAnalyzeClicked()
+{
+    if (m_advisor->isAnalyzing()) {
+        ui->statusbar->showMessage(QStringLiteral("AI 分析进行中，请稍候..."));
         return;
     }
 
-    ui->textEditLog->setPlainText(result.logText);
-    ui->statusbar->showMessage(result.statusSummary);
+    QVector<BetMatchSelection> selections;
+    QString errorMessage;
+    if (!collectSelections(selections, errorMessage)) {
+        ui->textEditLog->setPlainText(errorMessage);
+        return;
+    }
+
+    applyPickSideToAllRows();
+
+    const double budget = BetCalculator::parsePositiveDouble(ui->editMyAmount->text(),
+                                                             BetCalculator::kDefaultAmount);
+    const BetCalculationResult calcResult = BetCalculator::calculate(budget, selections);
+
+    BetAnalysisContext context;
+    context.budget = budget;
+    context.pickSideLabel = ui->comboPickSide->currentText();
+    context.selections = selections;
+    if (calcResult.success)
+        context.calculationSummary = calcResult.logText;
+
+    ui->btnAiAnalyze->setEnabled(false);
+    ui->statusbar->showMessage(QStringLiteral("正在请求 AI 分析..."));
+    m_advisor->analyze(context);
+}
+
+void MainWindow::onAnalyzeFinished(const QString &text)
+{
+    ui->btnAiAnalyze->setEnabled(true);
+    ui->textEditLog->setPlainText(QStringLiteral("========== AI 分析（DeepSeek）==========\n\n%1").arg(text));
+    ui->statusbar->showMessage(QStringLiteral("AI 分析完成"));
+}
+
+void MainWindow::onAnalyzeFailed(const QString &errorMessage)
+{
+    ui->btnAiAnalyze->setEnabled(true);
+    ui->statusbar->showMessage(QStringLiteral("AI 分析失败"));
+    ui->textEditLog->append(QStringLiteral("[AI 错误] %1\n").arg(errorMessage));
+}
+
+void MainWindow::onAnalyzeProgress(const QString &message)
+{
+    ui->statusbar->showMessage(message);
 }

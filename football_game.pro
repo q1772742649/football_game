@@ -16,6 +16,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    betadvisor.cpp \
     betcalculator.cpp \
     gameview.cpp \
     main.cpp \
@@ -23,6 +24,7 @@ SOURCES += \
     matchscraper.cpp
 
 HEADERS += \
+    betadvisor.h \
     betcalculator.h \
     gameview.h \
     mainwindow.h \
@@ -32,3 +34,9 @@ HEADERS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+# 构建后把 API Key 配置文件复制到 exe 同目录（若源文件存在）
+exists($$PWD/deepseek_api_key.txt) {
+    win32: QMAKE_POST_LINK += $$QMAKE_COPY \"$$shell_path($$PWD/deepseek_api_key.txt)\" \"$$shell_path($$DESTDIR/deepseek_api_key.txt)\"
+    else: QMAKE_POST_LINK += $$QMAKE_COPY \"$$shell_path($$PWD/deepseek_api_key.txt)\" \"$$shell_path($$DESTDIR/deepseek_api_key.txt)\"
+}

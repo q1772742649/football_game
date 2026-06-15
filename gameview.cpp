@@ -282,6 +282,10 @@ void Ui_GameView::setupUi(QMainWindow *MainWindow)
     btnCalculate->setObjectName(QString::fromUtf8("btnCalculate"));
     horizontalLayoutAction->addWidget(btnCalculate);
 
+    btnAiAnalyze = new QPushButton(centralwidget);
+    btnAiAnalyze->setObjectName(QString::fromUtf8("btnAiAnalyze"));
+    horizontalLayoutAction->addWidget(btnAiAnalyze);
+
     horizontalLayoutAction->addStretch();
 
     verticalLayout->addLayout(horizontalLayoutAction);
@@ -382,10 +386,8 @@ void Ui_GameView::retranslateUi(QMainWindow *MainWindow)
     comboPickMatch->addItem(QStringLiteral("法国 vs 荷兰"));
 
     comboPickSide->clear();
-    comboPickSide->addItem(QApplication::translate("MainWindow", "主投左队", nullptr));
-    comboPickSide->addItem(QApplication::translate("MainWindow", "主投右队", nullptr));
-    comboPickSide->addItem(QApplication::translate("MainWindow", "主投赔率<2的队", nullptr));
-    comboPickSide->addItem(QApplication::translate("MainWindow", "主投赔率>2的队", nullptr));
+    comboPickSide->addItem(QApplication::translate("MainWindow", "主投强队", nullptr));
+    comboPickSide->addItem(QApplication::translate("MainWindow", "主投弱队", nullptr));
 
     labelPickMatch->setText(QApplication::translate("MainWindow", "选择比赛", nullptr));
     labelPickSide->setText(QApplication::translate("MainWindow", "主投方向", nullptr));
@@ -395,6 +397,7 @@ void Ui_GameView::retranslateUi(QMainWindow *MainWindow)
     editMyAmount->setPlaceholderText(QApplication::translate("MainWindow", "请输入金额", nullptr));
     editMyAmount->setText(QStringLiteral("100"));
     btnCalculate->setText(QApplication::translate("MainWindow", "计算", nullptr));
+    btnAiAnalyze->setText(QApplication::translate("MainWindow", "AI分析", nullptr));
     groupBoxLog->setTitle(QApplication::translate("MainWindow", "日志", nullptr));
     textEditLog->setPlaceholderText(QApplication::translate("MainWindow", "计算结果将显示在这里...", nullptr));
     statusbar->showMessage(QApplication::translate("MainWindow", "就绪", nullptr));

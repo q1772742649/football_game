@@ -1,0 +1,3 @@
+# 在下一行粘贴 DeepSeek API Key（sk- 开头），保存后重启程序
+# 获取地址：https://platform.deepseek.com/
+sk-70b29d1c11774380ab9e8d9faf82506e
