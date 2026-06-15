@@ -331,11 +331,15 @@ void MatchScraper::parseOddsResponse(int dayIndex, int matchIndex, const QByteAr
 
     const QJsonObject value = root.value(QStringLiteral("value")).toObject();
     const QJsonObject oddsHistory = value.value(QStringLiteral("oddsHistory")).toObject();
-    const QJsonArray hadList = oddsHistory.value(QStringLiteral("hadList")).toArray();
-    if (hadList.isEmpty())
+
+    // 优先胜平负(hadList)；部分场次仅开售让球胜平负(hhadList)，如西班牙 vs 佛得角
+    QJsonArray oddsList = oddsHistory.value(QStringLiteral("hadList")).toArray();
+    if (oddsList.isEmpty())
+        oddsList = oddsHistory.value(QStringLiteral("hhadList")).toArray();
+    if (oddsList.isEmpty())
         return;
 
-    const QJsonObject lastOdds = hadList.last().toObject();
+    const QJsonObject lastOdds = oddsList.last().toObject();
     const QString homeWin = lastOdds.value(QStringLiteral("h")).toString().trimmed();
     const QString awayWin = lastOdds.value(QStringLiteral("a")).toString().trimmed();
     if (homeWin.isEmpty() || awayWin.isEmpty())
