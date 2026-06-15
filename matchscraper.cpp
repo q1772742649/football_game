@@ -117,7 +117,7 @@ void MatchScraper::fetchUrlAsync(const QString &url, const QString &referer,
         return;
     }
 
-    QNetworkRequest request(QUrl(url));
+    QNetworkRequest request{QUrl(url)};
     request.setHeader(QNetworkRequest::UserAgentHeader,
                       QStringLiteral("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"));
     request.setRawHeader("Referer", referer.toUtf8());
