@@ -21,12 +21,15 @@ private slots:
     void onCalculateClicked();
     void onUpdateClicked();
     void onDateChanged(int index);
+    void onPickMatchChanged(int index);
+    void onPickSideChanged(int index);
     void onFetchFinished(bool success, const QString &message);
     void onFetchFailed(const QString &errorMessage);
     void onFetchProgress(const QString &message);
 
 private:
     void applyDayToUi(int dayIndex);
+    void applyPickSideToRow(int row);
 
     Ui::GameView *ui;
     MatchScraper *m_scraper;

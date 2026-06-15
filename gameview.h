@@ -3,6 +3,7 @@
 
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QGroupBox>
@@ -30,10 +31,20 @@ public:
     QPushButton *btnUpdate;
     QGroupBox *groupBoxTeams;
     QGridLayout *gridLayoutTeams;
+    QLabel *labelHeaderParlay;
+    QLabel *labelHeaderSide;
     QLabel *labelHeaderCountry;
     QLabel *labelHeaderOdds;
     QLabel *labelHeaderCountry2;
     QLabel *labelHeaderOdds2;
+    QCheckBox *checkMatch1;
+    QCheckBox *checkMatch2;
+    QCheckBox *checkMatch3;
+    QCheckBox *checkMatch4;
+    QComboBox *comboRowSide1;
+    QComboBox *comboRowSide2;
+    QComboBox *comboRowSide3;
+    QComboBox *comboRowSide4;
     QLabel *labelCountry1;
     QLineEdit *editOdds1;
     QLabel *labelCountry2;

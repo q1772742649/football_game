@@ -1,6 +1,8 @@
 #include "mainwindow.h"
+#include "betcalculator.h"
 #include "gameview.h"
 
+#include <QCheckBox>
 #include <QComboBox>
 #include <QLineEdit>
 #include <QLabel>
@@ -9,20 +11,20 @@
 
 namespace {
 
-const double kDefaultOdds[] = { 1.45, 2.10, 3.50, 4.00, 6.3, 6.00, 8.00, 10.0 };
-const double kDefaultAmount = 100.0;
-const int kMatchCount = 4;
-
-double parsePositiveDouble(const QLineEdit *edit, double defaultValue)
+void updateRowSideCombo(QComboBox *combo, const QString &leftName, const QString &rightName)
 {
-    if (!edit || edit->text().trimmed().isEmpty())
-        return defaultValue;
-
-    bool ok = false;
-    const double value = edit->text().trimmed().toDouble(&ok);
-    if (!ok || value <= 0.0)
-        return defaultValue;
-    return value;
+    const int index = combo->currentIndex();
+    combo->blockSignals(true);
+    combo->clear();
+    if (leftName == QStringLiteral("-") || rightName == QStringLiteral("-")) {
+        combo->addItem(QStringLiteral("投左队"));
+        combo->addItem(QStringLiteral("投右队"));
+    } else {
+        combo->addItem(QStringLiteral("投 %1").arg(leftName));
+        combo->addItem(QStringLiteral("投 %1").arg(rightName));
+    }
+    combo->setCurrentIndex(index >= 0 && index < combo->count() ? index : 0);
+    combo->blockSignals(false);
 }
 
 } // namespace
@@ -34,10 +36,20 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    QLabel *leftLabels[] = { ui->labelCountry1, ui->labelCountry2, ui->labelCountry3, ui->labelCountry4 };
+    QLabel *rightLabels[] = { ui->labelCountry5, ui->labelCountry6, ui->labelCountry7, ui->labelCountry8 };
+    QComboBox *rowSides[] = { ui->comboRowSide1, ui->comboRowSide2, ui->comboRowSide3, ui->comboRowSide4 };
+    for (int row = 0; row < BetCalculator::kMatchCount; ++row)
+        updateRowSideCombo(rowSides[row], leftLabels[row]->text(), rightLabels[row]->text());
+
     connect(ui->btnCalculate, &QPushButton::clicked, this, &MainWindow::onCalculateClicked);
     connect(ui->btnUpdate, &QPushButton::clicked, this, &MainWindow::onUpdateClicked);
     connect(ui->comboPickDate, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, &MainWindow::onDateChanged);
+    connect(ui->comboPickMatch, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            this, &MainWindow::onPickMatchChanged);
+    connect(ui->comboPickSide, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            this, &MainWindow::onPickSideChanged);
     connect(m_scraper, &MatchScraper::fetchFinished, this, &MainWindow::onFetchFinished);
     connect(m_scraper, &MatchScraper::fetchFailed, this, &MainWindow::onFetchFailed);
     connect(m_scraper, &MatchScraper::fetchProgress, this, &MainWindow::onFetchProgress);
@@ -101,6 +113,55 @@ void MainWindow::onFetchProgress(const QString &message)
     ui->statusbar->showMessage(message);
 }
 
+void MainWindow::onPickMatchChanged(int index)
+{
+    if (index < 0 || index >= BetCalculator::kMatchCount)
+        return;
+
+    QCheckBox *checks[] = { ui->checkMatch1, ui->checkMatch2, ui->checkMatch3, ui->checkMatch4 };
+
+    checks[index]->setChecked(true);
+    applyPickSideToRow(index);
+}
+
+void MainWindow::onPickSideChanged(int index)
+{
+    Q_UNUSED(index)
+
+    const int matchRow = ui->comboPickMatch->currentIndex();
+    if (matchRow < 0 || matchRow >= BetCalculator::kMatchCount)
+        return;
+
+    applyPickSideToRow(matchRow);
+}
+
+void MainWindow::applyPickSideToRow(int row)
+{
+    if (row < 0 || row >= BetCalculator::kMatchCount)
+        return;
+
+    QLineEdit *oddsEdits[] = {
+        ui->editOdds1, ui->editOdds2, ui->editOdds3, ui->editOdds4,
+        ui->editOdds5, ui->editOdds6, ui->editOdds7, ui->editOdds8
+    };
+    QComboBox *rowSides[] = { ui->comboRowSide1, ui->comboRowSide2, ui->comboRowSide3, ui->comboRowSide4 };
+
+    const int pickMode = ui->comboPickSide->currentIndex();
+    if (pickMode == BetCalculator::PickLeft || pickMode == BetCalculator::PickRight) {
+        rowSides[row]->setCurrentIndex(pickMode);
+        return;
+    }
+
+    const int leftIndex = row;
+    const int rightIndex = row + BetCalculator::kMatchCount;
+    const double leftOdds = BetCalculator::parsePositiveDouble(oddsEdits[leftIndex]->text(),
+                                                               BetCalculator::defaultOdds(leftIndex));
+    const double rightOdds = BetCalculator::parsePositiveDouble(oddsEdits[rightIndex]->text(),
+                                                                BetCalculator::defaultOdds(rightIndex));
+    const bool pickLeft = BetCalculator::resolvePickLeft(leftOdds, rightOdds, pickMode);
+    rowSides[row]->setCurrentIndex(pickLeft ? 0 : 1);
+}
+
 void MainWindow::onDateChanged(int index)
 {
     if (index < 0)
@@ -124,18 +185,21 @@ void MainWindow::applyDayToUi(int dayIndex)
         ui->editOdds1, ui->editOdds2, ui->editOdds3, ui->editOdds4,
         ui->editOdds5, ui->editOdds6, ui->editOdds7, ui->editOdds8
     };
+    QCheckBox *checks[] = { ui->checkMatch1, ui->checkMatch2, ui->checkMatch3, ui->checkMatch4 };
+    QComboBox *rowSides[] = { ui->comboRowSide1, ui->comboRowSide2, ui->comboRowSide3, ui->comboRowSide4 };
 
     ui->comboPickMatch->blockSignals(true);
     ui->comboPickMatch->clear();
 
-    for (int row = 0; row < kMatchCount; ++row) {
+    for (int row = 0; row < BetCalculator::kMatchCount; ++row) {
         const int leftIndex = row;
-        const int rightIndex = row + kMatchCount;
+        const int rightIndex = row + BetCalculator::kMatchCount;
 
         if (row < group.matches.size()) {
             const MatchItem &match = group.matches.at(row);
             countryLabels[leftIndex]->setText(match.homeTeam);
             countryLabels[rightIndex]->setText(match.awayTeam);
+            updateRowSideCombo(rowSides[row], match.homeTeam, match.awayTeam);
             if (match.hasOdds) {
                 oddsEdits[leftIndex]->setText(match.homeOdds);
                 oddsEdits[rightIndex]->setText(match.awayOdds);
@@ -151,14 +215,20 @@ void MainWindow::applyDayToUi(int dayIndex)
         } else {
             countryLabels[leftIndex]->setText(QStringLiteral("-"));
             countryLabels[rightIndex]->setText(QStringLiteral("-"));
+            updateRowSideCombo(rowSides[row], QStringLiteral("-"), QStringLiteral("-"));
             oddsEdits[leftIndex]->clear();
             oddsEdits[rightIndex]->clear();
         }
     }
 
+    for (int row = 0; row < BetCalculator::kMatchCount; ++row)
+        checks[row]->setChecked(false);
+
     ui->comboPickMatch->blockSignals(false);
-    if (ui->comboPickMatch->count() > 0)
+    if (ui->comboPickMatch->count() > 0) {
         ui->comboPickMatch->setCurrentIndex(0);
+        applyPickSideToRow(0);
+    }
 }
 
 void MainWindow::onCalculateClicked()
@@ -171,109 +241,52 @@ void MainWindow::onCalculateClicked()
         ui->labelCountry1, ui->labelCountry2, ui->labelCountry3, ui->labelCountry4,
         ui->labelCountry5, ui->labelCountry6, ui->labelCountry7, ui->labelCountry8
     };
+    QCheckBox *checks[] = { ui->checkMatch1, ui->checkMatch2, ui->checkMatch3, ui->checkMatch4 };
+    QComboBox *rowSides[] = { ui->comboRowSide1, ui->comboRowSide2, ui->comboRowSide3, ui->comboRowSide4 };
 
-    const double budget = parsePositiveDouble(ui->editMyAmount, kDefaultAmount);
-    const int matchRow = ui->comboPickMatch->currentIndex();
-    const bool pickLeft = ui->comboPickSide->currentIndex() == 0;
+    const double budget = BetCalculator::parsePositiveDouble(ui->editMyAmount->text(),
+                                                             BetCalculator::kDefaultAmount);
+    QVector<BetMatchSelection> selections;
 
-    if (matchRow < 0) {
-        ui->textEditLog->setPlainText(QStringLiteral("请先选择比赛。"));
+    for (int row = 0; row < BetCalculator::kMatchCount; ++row) {
+        if (!checks[row]->isChecked())
+            continue;
+
+        const int leftIndex = row;
+        const int rightIndex = row + BetCalculator::kMatchCount;
+        const QString leftName = countryLabels[leftIndex]->text();
+        const QString rightName = countryLabels[rightIndex]->text();
+
+        if (leftName == QStringLiteral("-") || rightName == QStringLiteral("-")) {
+            ui->textEditLog->setPlainText(QStringLiteral("第 %1 行无比赛数据，请取消勾选。").arg(row + 1));
+            return;
+        }
+
+        if (oddsEdits[leftIndex]->text().trimmed().isEmpty()
+            || oddsEdits[rightIndex]->text().trimmed().isEmpty()) {
+            ui->textEditLog->setPlainText(
+                QStringLiteral("%1 vs %2 暂无赔率，请取消勾选或换一场。").arg(leftName, rightName));
+            return;
+        }
+
+        BetMatchSelection item;
+        item.row = row;
+        item.leftName = leftName;
+        item.rightName = rightName;
+        item.leftOdds = BetCalculator::parsePositiveDouble(oddsEdits[leftIndex]->text(),
+                                                           BetCalculator::defaultOdds(leftIndex));
+        item.rightOdds = BetCalculator::parsePositiveDouble(oddsEdits[rightIndex]->text(),
+                                                            BetCalculator::defaultOdds(rightIndex));
+        item.pickLeft = rowSides[row]->currentIndex() == 0;
+        selections.append(item);
+    }
+
+    const BetCalculationResult result = BetCalculator::calculate(budget, selections);
+    if (!result.success) {
+        ui->textEditLog->setPlainText(result.errorMessage);
         return;
     }
 
-    const int leftIndex = matchRow;
-    const int rightIndex = matchRow + kMatchCount;
-
-    const double leftOdds = parsePositiveDouble(oddsEdits[leftIndex], kDefaultOdds[leftIndex]);
-    const double rightOdds = parsePositiveDouble(oddsEdits[rightIndex], kDefaultOdds[rightIndex]);
-
-    const QString leftName = countryLabels[leftIndex]->text();
-    const QString rightName = countryLabels[rightIndex]->text();
-
-    if (leftName == QStringLiteral("-") || rightName == QStringLiteral("-")) {
-        ui->textEditLog->setPlainText(QStringLiteral("当前日期该场次无比赛数据。"));
-        return;
-    }
-
-    if (oddsEdits[leftIndex]->text().trimmed().isEmpty()
-        || oddsEdits[rightIndex]->text().trimmed().isEmpty()) {
-        ui->textEditLog->setPlainText(QStringLiteral("该场暂无胜平负固定奖金数据，请换一场或稍后再试。"));
-        return;
-    }
-
-    const double pickOdds = pickLeft ? leftOdds : rightOdds;
-    const double hedgeOdds = pickLeft ? rightOdds : leftOdds;
-    const QString pickName = pickLeft ? leftName : rightName;
-    const QString hedgeName = pickLeft ? rightName : leftName;
-
-    const double hedgeStake = budget / hedgeOdds;
-    const double pickStake = budget - hedgeStake;
-
-    if (pickStake < 0.0) {
-        ui->textEditLog->setPlainText(QStringLiteral("参数无效：对冲金额超过总成本，请检查赔率。"));
-        return;
-    }
-
-    const double leftStake = pickLeft ? pickStake : hedgeStake;
-    const double rightStake = pickLeft ? hedgeStake : pickStake;
-
-    const double pickWinReturn = pickStake * pickOdds;
-    const double pickWinProfit = pickWinReturn - budget;
-    const double hedgeReturn = hedgeStake * hedgeOdds;
-
-    QString log;
-    log += QStringLiteral("========== 单场保本对冲（不含平局） ==========\n\n");
-    log += QStringLiteral("总成本: %1\n").arg(budget, 0, 'f', 2);
-    log += QStringLiteral("选择比赛: %1 vs %2\n")
-               .arg(leftName)
-               .arg(rightName);
-    log += QStringLiteral("主投方向: %1（赔率 %2）\n")
-               .arg(pickName)
-               .arg(pickOdds, 0, 'f', 2);
-    log += QStringLiteral("左队 %1 赔率 %2    右队 %3 赔率 %4\n\n")
-               .arg(leftName)
-               .arg(leftOdds, 0, 'f', 2)
-               .arg(rightName)
-               .arg(rightOdds, 0, 'f', 2);
-
-    log += QStringLiteral("【本场左右分配】\n");
-    log += QStringLiteral("  左边(%1) 投: %2 元\n").arg(leftName).arg(leftStake, 0, 'f', 2);
-    log += QStringLiteral("  右边(%1) 投: %2 元\n\n").arg(rightName).arg(rightStake, 0, 'f', 2);
-
-    log += QStringLiteral("【下注明细】\n");
-    log += QStringLiteral("  %1  投 %2  [%3]\n")
-               .arg(leftName, -8)
-               .arg(leftStake, 0, 'f', 2)
-               .arg(pickLeft ? QStringLiteral("主投") : QStringLiteral("对冲"));
-    log += QStringLiteral("  %1  投 %2  [%3]\n")
-               .arg(rightName, -8)
-               .arg(rightStake, 0, 'f', 2)
-               .arg(pickLeft ? QStringLiteral("对冲") : QStringLiteral("主投"));
-
-    log += QStringLiteral("\n========== 结论 ==========\n");
-    log += QStringLiteral("本场 %1 vs %2，在 %3 元内：\n")
-               .arg(leftName)
-               .arg(rightName)
-               .arg(budget, 0, 'f', 0);
-    log += QStringLiteral("  左边(%1) 投 %2 元\n")
-               .arg(leftName)
-               .arg(leftStake, 0, 'f', 2);
-    log += QStringLiteral("  右边(%1) 投 %2 元\n")
-               .arg(rightName)
-               .arg(rightStake, 0, 'f', 2);
-    log += QStringLiteral("\n若 %1 胜：回报 %2，盈利 %3（博取机会）\n")
-               .arg(pickName)
-               .arg(pickWinReturn, 0, 'f', 2)
-               .arg(pickWinProfit, 0, 'f', 2);
-    log += QStringLiteral("若 %1 胜：回报 %2，盈亏 %3（保本）\n")
-               .arg(hedgeName)
-               .arg(hedgeReturn, 0, 'f', 2)
-               .arg(hedgeReturn - budget, 0, 'f', 2);
-
-    ui->textEditLog->setPlainText(log);
-    ui->statusbar->showMessage(QStringLiteral("%1 vs %2 | 左 %3 / 右 %4")
-                                   .arg(leftName)
-                                   .arg(rightName)
-                                   .arg(leftStake, 0, 'f', 2)
-                                   .arg(rightStake, 0, 'f', 2));
+    ui->textEditLog->setPlainText(result.logText);
+    ui->statusbar->showMessage(result.statusSummary);
 }
